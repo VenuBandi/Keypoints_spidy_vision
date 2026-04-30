@@ -93,6 +93,8 @@ python keypoints_spidy_vision.py
 
 <img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/b2212283-8730-4a58-8f17-3ee31c5f38e2" />
 
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/81bdfeb5-b949-476f-9407-7881994c9719" />
+
 
 
 
