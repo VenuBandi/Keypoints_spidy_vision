@@ -1,95 +1,155 @@
-# 🕷 Keypoints Spidy Vision - Strict Version
+# 🕷️ Keypoints Spidy Vision
 
-This is the corrected strict version.
+### 🧠 Real-Time Human Keypoint Detection on NVIDIA Jetson
 
-## What changed
+---
 
-The old version used a fixed pixel threshold. That was not reliable.
+## 🚀 Project Overview
 
-This version uses:
+Welcome to **Keypoints Spidy Vision** — a real-time Edge AI system that detects human body keypoints and streams them to a live dashboard.
+
+Inspired by a **Spiderman-style vision interface**, this project combines **computer vision, real-time inference, and interactive UI** to create an intelligent perception system.
+
+---
+
+## ⚡ What This Project Does
+
+🔹 Detects human keypoints in real-time
+🔹 Streams processed frames to a live dashboard
+🔹 Runs efficiently on NVIDIA Jetson (Edge AI)
+🔹 Forms the base for gesture recognition & anomaly detection
+
+---
+
+## 🧠 System Pipeline
 
 ```text
-normalized_distance = pixel_distance / average_detected_person_height
+Camera Feed → Keypoint Detection → Frame Processing → Flask Server → Live Dashboard
 ```
 
-A pair is unsafe when:
+---
 
-```text
-normalized_distance < NORMALIZED_DISTANCE_THRESHOLD
+## 🕷️ Spidy Vision Dashboard
+
+* Real-time visual output
+* Keypoint overlays
+* Live streaming interface
+* Designed for future alert systems
+
+👉 Open in browser:
+
+```
+http://<JETSON_IP>:5000
 ```
 
-Default:
+---
 
-```python
-NORMALIZED_DISTANCE_THRESHOLD = 1.05
-FALLBACK_PIXEL_THRESHOLD = 500
-```
+## 🖼️ Image-Based Detection (Extension)
 
-## Why this is better
+This system can also be extended to process static images:
 
-A 500px distance means different things depending on:
-- image size
-- camera distance
-- whether people are close to the camera
-- whether people are far away
+* Upload image → Detect keypoints → Display output
+* Useful for testing without camera
+* Supports debugging and analysis
 
-Using body height gives a stricter and more visual estimate.
+⚠️ *Planned enhancement (can be implemented easily)*
 
-## Run
+---
 
-Copy the whole folder to:
+## 🛠️ Tech Stack
+
+* 🐍 Python
+* 🎥 OpenCV
+* ⚡ NVIDIA Jetson Inference
+* 🌐 Flask
+* 🧠 Computer Vision Models
+
+---
+
+## ▶️ How to Run
+
+### 1️⃣ Clone Repo
 
 ```bash
-~/Desktop/spring_26/jetson_apps/jetson-inference/python/examples/keypoints_spidy_vision
+git clone https://github.com/Venub1/Keypoints_spidy_vision.git
+cd Keypoints_spidy_vision
 ```
 
-Inside container:
+### 2️⃣ Install Dependencies
 
 ```bash
-cd /jetson-inference/python/examples/keypoints_spidy_vision
-pip3 install flask
-python3 keypoints_spidy_vision.py
+pip install flask opencv-python numpy
 ```
 
-Open:
+### 3️⃣ Run the System
 
-```text
-http://JETSON_IP:5000
+```bash
+python keypoints_spidy_vision.py
 ```
 
-## Tune strictness
+---
 
-Edit:
+## 📸 Demo
 
-```python
-NORMALIZED_DISTANCE_THRESHOLD = 1.05
+*(Add your screenshots here for max impact)*
+
+Example:
+
+```
+/screenshots/dashboard.png
 ```
 
-Try:
+---
 
-```text
-0.85 = moderate
-1.05 = strict
-1.25 = very strict
-1.50 = extremely strict
-```
+## 🎯 Use Cases
 
-## Saved outputs
+🚨 Anomaly Detection Systems
+🧠 Gesture Recognition
+🧑‍🚒 Silent Communication (Security / Emergency)
+🏭 Smart Surveillance
+🤖 Human Activity Recognition
 
-Live violation images:
+---
 
-```text
-violation_captures/live_stream/
-```
+## 🔮 Future Enhancements
 
-Uploaded image results:
+* 🧠 LSTM-based gesture classification
+* 🚨 Forbidden object detection (guns, phones, etc.)
+* ⚠️ Real-time alert system
+* 🎨 Advanced Spiderman-style UI
+* ⚡ Performance optimization
 
-```text
-violation_captures/uploaded_images/
-```
+---
 
-Logs:
+## ⚠️ Limitations
 
-```text
-logs/spidy_detection_log.csv
-```
+* Sensitive to lighting conditions
+* Occlusion can affect accuracy
+* Requires Jetson setup for optimal performance
+
+---
+
+## 🧠 Project Vision
+
+This project is part of a broader goal to build **real-time intelligent systems on edge devices**, enabling:
+
+* Faster decision-making
+* Reduced latency
+* Real-world deployment readiness
+
+---
+
+## 👨‍💻 Author
+
+**Venu Bandi**
+MPS Data Science – UMBC
+
+---
+
+## ⭐ Acknowledgements
+
+* NVIDIA Jetson Inference
+* OpenCV Community
+* Real-time pose estimation research
+
+---
