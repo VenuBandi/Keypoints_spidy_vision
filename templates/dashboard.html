@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>W.E.B — Spiderman Threat Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{--red:#e62429;--red2:#ff4444;--green:#00ffaa;--blue:#1a5cff;--blue2:#4d8bff;--gold:#ffc94a;--white:#e8eeff;--glow-g:0 0 12px rgba(0,255,170,0.7);--glow-r:0 0 16px rgba(230,36,41,0.85);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#06000d;color:var(--white);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden;cursor:crosshair;transition:background 0.4s;}
+body.alert-mode{background:#160004;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg stroke='rgba(0,255,170,0.05)' stroke-width='0.7' fill='none'%3E%3Ccircle cx='60' cy='60' r='58'/%3E%3Ccircle cx='60' cy='60' r='40'/%3E%3Ccircle cx='60' cy='60' r='22'/%3E%3Cline x1='2' y1='60' x2='118' y2='60'/%3E%3Cline x1='60' y1='2' x2='60' y2='118'/%3E%3Cline x1='14' y1='14' x2='106' y2='106'/%3E%3Cline x1='106' y1='14' x2='14' y2='106'/%3E%3Cline x1='2' y1='36' x2='118' y2='36'/%3E%3Cline x1='2' y1='84' x2='118' y2='84'/%3E%3Cline x1='36' y1='2' x2='36' y2='118'/%3E%3Cline x1='84' y1='2' x2='84' y2='118'/%3E%3C/g%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.7;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,170,0.007) 2px,rgba(0,255,170,0.007) 4px);pointer-events:none;z-index:1000;animation:scanroll 10s linear infinite;}
+@keyframes scanroll{from{background-position:0 0}to{background-position:0 200px}}
+.hud{position:relative;z-index:1;display:grid;grid-template-rows:auto 1fr auto;min-height:100vh;padding:10px 14px;gap:10px;}
+.header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;border-bottom:1px solid rgba(0,255,170,0.3);padding-bottom:10px;transition:border-color 0.4s;}
+.header.alerted{border-bottom-color:rgba(230,36,41,0.5);}
+.header-left,.header-right{display:flex;gap:18px;align-items:center;font-size:11px;letter-spacing:0.12em;color:rgba(0,255,170,0.5);}
+.header-right{justify-content:flex-end;}
+.header-center{text-align:center;}
+.logo{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:900;letter-spacing:0.35em;background:linear-gradient(90deg,var(--red),var(--white),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.subtitle{font-size:10px;letter-spacing:0.22em;color:rgba(255,255,255,0.28);margin-top:3px;}
+.status-dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 1.8s ease-in-out infinite;transition:background 0.3s,box-shadow 0.3s;}
+.status-dot.alerted{background:var(--red2);box-shadow:0 0 10px var(--red2);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+#sysStatus{color:var(--green);font-weight:700;transition:color 0.3s;}
+#sysStatus.alerted{color:var(--red2);}
+.main{display:grid;grid-template-columns:255px 1fr 255px;gap:10px;}
+.panel{background:rgba(0,255,170,0.04);border:1px solid rgba(0,255,170,0.28);position:relative;padding:13px;overflow:hidden;transition:border-color 0.4s,background 0.4s;}
+.panel.alerted{background:rgba(230,36,41,0.06);border-color:rgba(230,36,41,0.45);}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:0.55;transition:background 0.4s;}
+.panel.alerted::before{background:linear-gradient(90deg,transparent,var(--red2),transparent);}
+.panel::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--green) 8px,transparent 8px) top left,linear-gradient(225deg,var(--green) 8px,transparent 8px) top right,linear-gradient(315deg,var(--green) 8px,transparent 8px) bottom right,linear-gradient(45deg,var(--green) 8px,transparent 8px) bottom left;background-size:12px 12px;background-repeat:no-repeat;opacity:0.2;pointer-events:none;}
+.panel.alerted::after{background:linear-gradient(135deg,var(--red2) 8px,transparent 8px) top left,linear-gradient(225deg,var(--red2) 8px,transparent 8px) top right,linear-gradient(315deg,var(--red2) 8px,transparent 8px) bottom right,linear-gradient(45deg,var(--red2) 8px,transparent 8px) bottom left;background-size:12px 12px;background-repeat:no-repeat;opacity:0.25;}
+.panel-title{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.2em;color:rgba(0,255,170,0.55);border-bottom:1px solid rgba(0,255,170,0.1);padding-bottom:8px;margin-bottom:11px;text-transform:uppercase;transition:color 0.4s;}
+.panel.alerted .panel-title{color:rgba(255,68,68,0.6);border-bottom-color:rgba(255,68,68,0.1);}
+.left-col,.right-col,.center-col{display:flex;flex-direction:column;gap:10px;}
+.web-shooter{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 13px;}
+.web-ring{position:relative;width:110px;height:110px;display:flex;align-items:center;justify-content:center;}
+.web-ring svg{position:absolute;inset:0;width:100%;height:100%;}
+.web-core{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,#66ffcc 0%,#00cc88 40%,#001a0d 80%);box-shadow:0 0 28px var(--green),0 0 55px rgba(0,255,170,0.3),inset 0 0 18px rgba(0,255,170,0.5);animation:pulse-core 2s ease-in-out infinite;z-index:1;display:flex;align-items:center;justify-content:center;font-size:22px;transition:background 0.5s,box-shadow 0.5s;}
+.web-core.alerted{background:radial-gradient(circle,#ff6666 0%,#e62429 40%,#2a0005 80%);box-shadow:0 0 28px var(--red),0 0 55px rgba(230,36,41,0.4),inset 0 0 18px rgba(230,36,41,0.5);}
+@keyframes pulse-core{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}
+.reactor-pct{font-size:26px;font-family:'Orbitron',sans-serif;font-weight:900;color:#fff;text-shadow:var(--glow-g);}
+.reactor-label{font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.15em;color:var(--green);}
+.reactor-sub{font-size:9px;letter-spacing:0.2em;color:rgba(0,255,170,0.38);}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(0,255,170,0.07);font-size:11px;}
+.stat-row:last-child{border-bottom:none;}
+.stat-key{color:rgba(0,255,170,0.45);letter-spacing:0.1em;}
+.stat-val{color:var(--white);font-weight:600;}
+.stat-val.ok{color:var(--green);}
+.stat-val.warn{color:var(--gold);}
+.bar-gauge{margin:4px 0;}
+.bar-gauge-label{display:flex;justify-content:space-between;font-size:10px;color:rgba(0,255,170,0.45);margin-bottom:3px;}
+.bar-track{height:4px;background:rgba(0,255,170,0.08);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--green),#aaffdd);box-shadow:0 0 6px var(--green);transition:width 0.5s;}
+.camera-feed{flex:1;min-height:350px;position:relative;background:#000;border:2px solid rgba(0,255,170,0.28);overflow:hidden;transition:border-color 0.3s,box-shadow 0.3s;}
+.camera-feed.alerted{border-color:var(--red2);box-shadow:0 0 35px rgba(230,36,41,0.45),inset 0 0 30px rgba(230,36,41,0.08);}
+.camera-feed::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,255,170,0.03),transparent 50%,rgba(26,92,255,0.02));z-index:1;pointer-events:none;}
+.cam-corner{position:absolute;width:28px;height:28px;border-color:var(--green);border-style:solid;opacity:0.8;z-index:3;transition:border-color 0.3s;}
+.cam-corner.tl{top:8px;left:8px;border-width:2px 0 0 2px;}
+.cam-corner.tr{top:8px;right:8px;border-width:2px 2px 0 0;}
+.cam-corner.bl{bottom:8px;left:8px;border-width:0 0 2px 2px;}
+.cam-corner.br{bottom:8px;right:8px;border-width:0 2px 2px 0;}
+.camera-feed.alerted .cam-corner{border-color:var(--red2);}
+.cam-crosshair{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;pointer-events:none;}
+.cam-crosshair::before,.cam-crosshair::after{content:'';position:absolute;background:rgba(0,255,170,0.13);}
+.cam-crosshair::before{width:1px;height:60%;}
+.cam-crosshair::after{width:60%;height:1px;}
+.cam-label{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:0.25em;color:rgba(0,255,170,0.6);z-index:3;white-space:nowrap;transition:color 0.3s;}
+.cam-label.alerted{color:rgba(255,68,68,0.85);}
+.cam-fps{position:absolute;bottom:10px;left:12px;font-size:10px;color:rgba(0,255,170,0.5);z-index:3;}
+.cam-res{position:absolute;bottom:10px;right:12px;font-size:10px;color:rgba(77,139,255,0.5);z-index:3;}
+.cam-alert-overlay{position:absolute;inset:0;border:4px solid var(--red2);box-shadow:inset 0 0 60px rgba(230,36,41,0.4);z-index:4;pointer-events:none;opacity:0;}
+.cam-alert-overlay.active{animation:flash-border 0.6s ease-in-out 4;}
+
+/* NEW UPLOAD BUTTON STYLES */
+.cam-controls { position: absolute; top: 10px; right: 12px; z-index: 10; display: flex; gap: 8px; }
+.spidy-btn { background: rgba(0,255,170,0.1); border: 1px solid var(--green); color: var(--green); font-family: 'Orbitron', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.15em; padding: 6px 10px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; border-radius: 2px;}
+.spidy-btn:hover { background: var(--green); color: #000; box-shadow: var(--glow-g); }
+.camera-feed.alerted .spidy-btn { border-color: var(--red2); color: var(--red2); background: rgba(230,36,41,0.1); }
+.camera-feed.alerted .spidy-btn:hover { background: var(--red2); color: #fff; box-shadow: var(--glow-r); }
+
+@keyframes flash-border{0%,100%{opacity:0}50%{opacity:1}}
+#liveFeed{width:100%;height:100%;display:block;object-fit:cover;position:absolute;inset:0;z-index:1;}
+#feedOffline{display:none;align-items:center;justify-content:center;position:absolute;inset:0;z-index:1;flex-direction:column;gap:10px;}
+#feedOffline .off-icon{font-size:36px;opacity:0.3;}
+#feedOffline .off-msg{font-size:11px;letter-spacing:0.15em;color:rgba(0,255,170,0.3);}
+#popupAlert{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.85);z-index:8000;pointer-events:none;background:rgba(0,0,0,0.94);border:3px solid var(--red2);box-shadow:0 0 80px rgba(230,36,41,0.7),inset 0 0 30px rgba(230,36,41,0.07);padding:28px 50px;text-align:center;opacity:0;transition:opacity 0.25s,transform 0.25s;min-width:380px;}
+#popupAlert.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+.pa-spider{font-size:42px;display:block;margin-bottom:10px;animation:spider-swing 0.7s ease-in-out infinite alternate;}
+@keyframes spider-swing{from{transform:rotate(-10deg)}to{transform:rotate(10deg)}}
+.pa-title{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--red2);text-shadow:var(--glow-r);letter-spacing:0.25em;margin-bottom:8px;}
+.pa-type{font-family:'Orbitron',sans-serif;font-size:12px;color:var(--gold);letter-spacing:0.2em;margin-bottom:6px;}
+.pa-reason{font-size:11px;color:rgba(255,255,255,0.7);letter-spacing:0.07em;}
+.pa-ts{font-size:10px;color:rgba(255,255,255,0.3);margin-top:10px;letter-spacing:0.12em;}
+.pa-count{font-family:'Orbitron',sans-serif;font-size:14px;color:var(--red2);margin-top:12px;border-top:1px solid rgba(230,36,41,0.2);padding-top:10px;letter-spacing:0.15em;}
+.ticker-wrap{overflow:hidden;height:26px;background:rgba(0,255,170,0.04);border:1px solid rgba(0,255,170,0.17);transition:background 0.4s,border-color 0.4s;}
+.ticker-wrap.alerted{background:rgba(230,36,41,0.08);border-color:rgba(230,36,41,0.35);}
+.ticker{display:flex;align-items:center;height:100%;white-space:nowrap;animation:ticker-scroll 22s linear infinite;font-size:11px;color:var(--green);letter-spacing:0.08em;padding-left:100%;transition:color 0.4s;}
+.ticker.alerted{color:var(--red2);}
+@keyframes ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+.ticker-label{font-family:'Orbitron',sans-serif;font-size:9px;background:var(--green);color:#000;padding:0 8px;margin-right:12px;height:100%;display:flex;align-items:center;font-weight:700;letter-spacing:0.15em;flex-shrink:0;position:sticky;left:0;transition:background 0.4s,color 0.4s;}
+.ticker.alerted .ticker-label{background:var(--red);color:#fff;}
+.log-list{display:flex;flex-direction:column;gap:5px;max-height:230px;overflow-y:auto;}
+.log-list::-webkit-scrollbar{width:3px;}
+.log-list::-webkit-scrollbar-thumb{background:var(--green);border-radius:2px;}
+.log-entry{font-size:10px;padding:5px 8px;border-left:2px solid var(--red);background:rgba(230,36,41,0.06);animation:slide-in 0.3s ease;line-height:1.5;}
+.log-entry.normal{border-left-color:var(--green);background:rgba(0,255,170,0.04);}
+@keyframes slide-in{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+.log-time{color:rgba(77,139,255,0.55);display:block;}
+.log-msg{color:rgba(255,255,255,0.77);display:block;}
+.log-type{display:inline-block;font-family:'Orbitron',sans-serif;font-size:8px;padding:1px 5px;border-radius:2px;margin-bottom:2px;letter-spacing:0.1em;font-weight:700;}
+.log-type.anomaly{background:var(--red);color:#fff;}
+.log-type.ok{background:var(--green);color:#000;}
+.radar-wrap{display:flex;align-items:center;justify-content:center;padding:6px 0;}
+#radarCanvas{border-radius:50%;}
+.rule-row{display:grid;grid-template-columns:1fr auto;align-items:center;padding:5px 0;border-bottom:1px solid rgba(0,255,170,0.06);font-size:10px;gap:8px;}
+.rule-row:last-child{border-bottom:none;}
+.rule-desc{color:rgba(255,255,255,0.6);}
+.rule-badge{font-family:'Orbitron',sans-serif;font-size:8px;padding:2px 6px;border-radius:2px;font-weight:700;white-space:nowrap;}
+.rule-badge.active{background:rgba(0,255,170,0.1);color:var(--green);border:1px solid var(--green);}
+.rule-badge.tripped{background:rgba(230,36,41,0.2);color:var(--red2);border:1px solid var(--red);animation:pulse-rule 0.5s ease infinite;}
+@keyframes pulse-rule{0%,100%{opacity:1}50%{opacity:0.3}}
+.statusbar{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid rgba(0,255,170,0.25);padding-top:8px;gap:8px;transition:border-color 0.4s;}
+.statusbar.alerted{border-top-color:rgba(230,36,41,0.45);}
+.sb-item{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.sb-val{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--green);text-shadow:var(--glow-g);transition:color 0.3s,text-shadow 0.3s;}
+.sb-val.danger{color:var(--red2);text-shadow:var(--glow-r);}
+.sb-key{font-size:9px;letter-spacing:0.15em;color:rgba(0,255,170,0.38);}
+.threat-big{font-family:'Orbitron',sans-serif;font-size:64px;font-weight:900;line-height:1;color:var(--green);text-shadow:var(--glow-g);transition:color 0.3s,text-shadow 0.3s;}
+.threat-big.has-threats{color:var(--red2);text-shadow:var(--glow-r);}
+.ring-rotate{animation:ring-spin 4s linear infinite;transform-origin:center;}
+.ring-rotate2{animation:ring-spin 7s linear infinite reverse;transform-origin:center;}
+@keyframes ring-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+#initOverlay{position:fixed;inset:0;background:#000;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;}
+.init-spider{font-size:60px;animation:pulse-core 1s ease-in-out infinite;}
+.init-logo{font-family:'Orbitron',sans-serif;font-size:32px;font-weight:900;letter-spacing:0.4em;background:linear-gradient(90deg,var(--red),var(--white),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.init-sub{font-size:12px;letter-spacing:0.22em;color:rgba(255,255,255,0.28);}
+.init-bar{width:300px;height:2px;background:rgba(0,255,170,0.1);border-radius:1px;overflow:hidden;}
+.init-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--blue));box-shadow:var(--glow-g);width:0;transition:width 2.5s ease;}
+.init-lines{font-size:10px;color:rgba(0,255,170,0.45);text-align:center;letter-spacing:0.1em;}
+a.csv-link{color:var(--blue2);text-decoration:none}
+</style>
+</head>
+<body>
+<div id="initOverlay">
+  <div class="init-spider">🕷️</div>
+  <div class="init-logo">W.E.B</div>
+  <div class="init-sub">WORLDWIDE ENHANCED BASELINE · ANOMALY DETECTION v5.0</div>
+  <div class="init-bar"><div class="init-bar-fill" id="initBar"></div></div>
+  <div class="init-lines" id="initLines">INITIALIZING SPIDER-SENSE...</div>
+</div>
+
+<div id="popupAlert">
+  <span class="pa-spider">🕷️</span>
+  <div class="pa-title">THREAT DETECTED</div>
+  <div class="pa-type" id="paType">—</div>
+  <div class="pa-reason" id="paReason">—</div>
+  <div class="pa-ts" id="paTs">—</div>
+  <div class="pa-count">TOTAL THREATS LOGGED: <span id="paCount">0</span></div>
+</div>
+
+<div class="hud">
+  <header class="header" id="mainHeader">
+    <div class="header-left">
+      <span class="status-dot" id="statusDot"></span>
+      <span>UNIT: PETER-616</span>
+      <span id="clockDisplay">--:--:--</span>
+    </div>
+    <div class="header-center">
+      <div class="logo">🕷 W.E.B 🕸</div>
+      <div class="subtitle">WORLDWIDE ENHANCED BASELINE · SPIDERMAN THREAT DASHBOARD</div>
+    </div>
+    <div class="header-right">
+      <span id="sysStatus">NOMINAL</span>
+      <span>MODEL: SSD-MOBILENET-V2</span>
+      <span>JETSON: AGX</span>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="left-col">
+      <div class="panel web-shooter" id="p0">
+        <div class="panel-title">Web Shooter</div>
+        <div class="web-ring">
+          <svg viewBox="0 0 110 110">
+            <circle cx="55" cy="55" r="50" fill="none" stroke="rgba(0,255,170,0.1)" stroke-width="1" stroke-dasharray="4 4"/>
+            <circle cx="55" cy="55" r="44" fill="none" stroke="rgba(0,255,170,0.07)" stroke-width="6"/>
+            <circle cx="55" cy="55" r="44" fill="none" stroke="url(#webGrad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="55" transform="rotate(-90 55 55)"/>
+            <g class="ring-rotate"><circle cx="55" cy="55" r="50" fill="none" stroke="rgba(0,255,170,0.13)" stroke-width="1" stroke-dasharray="8 16"/></g>
+            <g class="ring-rotate2"><circle cx="55" cy="55" r="47" fill="none" stroke="rgba(26,92,255,0.1)" stroke-width="1" stroke-dasharray="4 20"/></g>
+            <defs><linearGradient id="webGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#00ffaa"/><stop offset="100%" stop-color="#1a5cff"/></linearGradient></defs>
+          </svg>
+          <div class="web-core" id="webCore">🕷️</div>
+        </div>
+        <div class="reactor-pct">80%</div>
+        <div class="reactor-label">WEB FLUID</div>
+        <div class="reactor-sub" id="shooterSub">NOMINAL · HIGH PRESSURE</div>
+      </div>
+
+      <div class="panel" id="p1">
+        <div class="panel-title">System Telemetry</div>
+        <div class="stat-row"><span class="stat-key">BACKEND</span><span class="stat-val ok" id="backendState">ONLINE</span></div>
+        <div class="stat-row"><span class="stat-key">FPS</span><span class="stat-val ok" id="fpsDisplay">0</span></div>
+        <div class="stat-row"><span class="stat-key">AVG CONF</span><span class="stat-val" id="avgConf">0%</span></div>
+        <div class="stat-row"><span class="stat-key">UPTIME</span><span class="stat-val" id="uptime">00:00:00</span></div>
+        <div style="margin-top:10px">
+          <div class="bar-gauge"><div class="bar-gauge-label"><span>CONFIDENCE</span><span id="gpuUtilPct">0%</span></div><div class="bar-track"><div class="bar-fill" id="gpuBar" style="width:0%"></div></div></div>
+          <div class="bar-gauge" style="margin-top:6px"><div class="bar-gauge-label"><span>THREAT LEVEL</span><span id="memPct">0</span></div><div class="bar-track"><div class="bar-fill" id="memBar" style="width:0%"></div></div></div>
+        </div>
+      </div>
+
+      <div class="panel" id="p2">
+        <div class="panel-title">Spider-Sense Stats</div>
+        <div class="stat-row"><span class="stat-key">PERSONS</span><span class="stat-val" id="personCount">0</span></div>
+        <div class="stat-row"><span class="stat-key">OBJECTS</span><span class="stat-val" id="objCount">0</span></div>
+        <div class="stat-row"><span class="stat-key">FRAMES</span><span class="stat-val" id="frameCount">0</span></div>
+        <div class="stat-row"><span class="stat-key">LAST ALERT</span><span class="stat-val ok" id="lastAnomalyTime">—</span></div>
+        <div class="stat-row"><span class="stat-key">SINCE LAST</span><span class="stat-val" id="timeSinceLast">N/A</span></div>
+      </div>
+    </div>
+
+    <div class="center-col">
+      <div class="camera-feed" id="cameraFeed">
+        <div class="cam-corner tl"></div><div class="cam-corner tr"></div>
+        <div class="cam-corner bl"></div><div class="cam-corner br"></div>
+        <div class="cam-crosshair"></div>
+        <div class="cam-label" id="camLabel">🕷 LIVE · SPIDER-CAM · NOMINAL</div>
+        <img id="liveFeed" src="/stream" alt="live feed" />
+        
+        <div class="cam-controls">
+          <button id="btnLive" class="spidy-btn" style="display:none;">RETURN TO LIVE</button>
+          <button id="btnUpload" class="spidy-btn">UPLOAD IMAGE</button>
+          <input type="file" id="uploadInput" accept=".jpg,.jpeg,.png,.bmp" style="display:none;" />
+        </div>
+
+        <div id="feedOffline"><div class="off-icon">🕸️</div><div class="off-msg">AWAITING STREAM · /stream</div></div>
+        <div class="cam-alert-overlay" id="alertOverlay"></div>
+        <div class="cam-fps" id="camFps">FPS: 0</div>
+        <div class="cam-res" id="camRes">LIVE DETECTION</div>
+      </div>
+
+      <div class="ticker-wrap" id="tickerWrap">
+        <div class="ticker" id="tickerInner">
+          <span class="ticker-label">STATUS</span>
+          <span id="tickerText">🕷 SPIDER-SENSE NOMINAL · MONITORING SOCIAL DISTANCE · BREACH = centre-dist / est-height &lt; threshold</span>
+        </div>
+      </div>
+
+      <div class="panel" id="p3">
+        <div class="panel-title">Active Threat Rules</div>
+        <div class="rule-row"><span class="rule-desc">Normalised dist / est. height &lt; <span id="ruleThreshold">0.80</span></span><span class="rule-badge active" id="rule-norm">ACTIVE</span></div>
+        <div class="rule-row"><span class="rule-desc">Fallback raw pixel gap &lt; <span id="ruleFallback">150</span>px (low keypoints)</span><span class="rule-badge active" id="rule-fallback">ACTIVE</span></div>
+        <div class="rule-row"><span class="rule-desc">Height estimate: head→foot keypoints</span><span class="rule-badge active" id="rule-height">ACTIVE</span></div>
+        <div class="rule-row"><span class="rule-desc">Distance measured: body centre-to-centre</span><span class="rule-badge active" id="rule-center">ACTIVE</span></div>
+        <div class="rule-row"><span class="rule-desc">Min keypoints for reliable scale</span><span class="rule-badge active" id="rule-kp">4 KP</span></div>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="panel" id="p4" style="text-align:center;padding:16px 13px;">
+        <div class="panel-title">Threat Level</div>
+        <div style="font-size:38px;line-height:1;margin-bottom:4px;" id="threatIcon">🕷️</div>
+        <div class="threat-big" id="anomalyCountBig">0</div>
+        <div style="font-size:10px;letter-spacing:0.2em;margin-top:4px;transition:color 0.4s;" id="threatLabel">THREATS DETECTED</div>
+        <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.33);">CSV: <a class="csv-link" href="/logs" target="_blank">anomaly_log.csv</a></div>
+      </div>
+
+      <div class="panel" id="p5">
+        <div class="panel-title">Web Radar</div>
+        <div class="radar-wrap"><canvas id="radarCanvas" width="160" height="160"></canvas></div>
+      </div>
+
+      <div class="panel" id="p6" style="flex:1;">
+        <div class="panel-title">Threat Log</div>
+        <div class="log-list" id="logList">
+          <div class="log-entry normal">
+            <span class="log-type ok">SYSTEM</span>
+            <span class="log-time">— BOOT —</span>
+            <span class="log-msg">W.E.B online. Alerts will pop up when anomalies are detected.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="statusbar" id="mainStatusbar">
+    <div class="sb-item"><div class="sb-val" id="sbTotal">0</div><div class="sb-key">TOTAL FRAMES</div></div>
+    <div class="sb-item"><div class="sb-val danger" id="sbAnomalies">0</div><div class="sb-key">THREATS</div></div>
+    <div class="sb-item"><div class="sb-val ok" id="sbStatus">NOMINAL</div><div class="sb-key">SPIDER-SENSE</div></div>
+    <div class="sb-item"><div class="sb-val" id="sbFps">0</div><div class="sb-key">FPS</div></div>
+    <div class="sb-item"><div class="sb-val" id="sbConf">0%</div><div class="sb-key">AVG CONF</div></div>
+  </footer>
+</div>
+
+<script>
+let isLiveMode = true; // State flag to pause dashboard polling during image view
+
+const initLines=["ACTIVATING SPIDER-SENSE...","CALIBRATING WEB SHOOTERS...","CONNECTING TO SPIDER-CAM...","LOADING THREAT PROTOCOLS...","W.E.B ONLINE."];
+let initIdx=0;
+const initBar=document.getElementById('initBar');
+const initText=document.getElementById('initLines');
+const overlay=document.getElementById('initOverlay');
+setTimeout(()=>{initBar.style.width='100%';},100);
+const initInt=setInterval(()=>{
+  if(initIdx<initLines.length){initText.textContent=initLines[initIdx++];}
+  else{clearInterval(initInt);setTimeout(()=>{overlay.style.transition='opacity 0.8s';overlay.style.opacity='0';setTimeout(()=>overlay.remove(),800);},400);}
+},500);
+
+const startTime=Date.now();
+function pad(n){return String(n).padStart(2,'0');}
+function updateClock(){
+  const now=new Date();
+  document.getElementById('clockDisplay').textContent=`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  const up=Math.floor((Date.now()-startTime)/1000);
+  document.getElementById('uptime').textContent=`${pad(Math.floor(up/3600))}:${pad(Math.floor((up%3600)/60))}:${pad(up%60)}`;
+}
+setInterval(updateClock,1000);
+
+const radarCtx=document.getElementById('radarCanvas').getContext('2d');
+let radarAngle=0,radarBlips=[];
+function addBlip(anomaly=false){
+  const a=Math.random()*Math.PI*2,d=Math.random()*60;
+  radarBlips.push({x:Math.cos(a)*d,y:Math.sin(a)*d,born:Date.now(),anomaly});
+  radarBlips=radarBlips.filter(b=>Date.now()-b.born<3000);
+}
+setInterval(()=>addBlip(false),1200);
+
+function drawRadar(){
+  const W=160,H=160,cx=80,cy=80,r=72;
+  radarCtx.clearRect(0,0,W,H);
+  radarCtx.fillStyle='#040010';radarCtx.beginPath();radarCtx.arc(cx,cy,r,0,Math.PI*2);radarCtx.fill();
+  [24,48,72].forEach(ring=>{radarCtx.beginPath();radarCtx.arc(cx,cy,ring,0,Math.PI*2);radarCtx.strokeStyle='rgba(0,255,170,0.1)';radarCtx.lineWidth=1;radarCtx.stroke();});
+  for(let i=0;i<8;i++){const a=i*Math.PI/4;radarCtx.strokeStyle='rgba(0,255,170,0.07)';radarCtx.lineWidth=1;radarCtx.beginPath();radarCtx.moveTo(cx,cy);radarCtx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);radarCtx.stroke();}
+  radarCtx.save();radarCtx.beginPath();radarCtx.moveTo(cx,cy);radarCtx.arc(cx,cy,r,radarAngle,radarAngle+Math.PI*0.5);radarCtx.closePath();
+  const sg=radarCtx.createRadialGradient(cx,cy,0,cx,cy,r);sg.addColorStop(0,'rgba(0,255,170,0)');sg.addColorStop(1,'rgba(0,255,170,0.12)');radarCtx.fillStyle=sg;radarCtx.fill();radarCtx.restore();
+  radarCtx.beginPath();radarCtx.moveTo(cx,cy);radarCtx.lineTo(cx+Math.cos(radarAngle)*r,cy+Math.sin(radarAngle)*r);radarCtx.strokeStyle='rgba(0,255,170,0.7)';radarCtx.lineWidth=1.5;radarCtx.stroke();
+  radarBlips.forEach(b=>{
+    const alpha=Math.max(0,1-(Date.now()-b.born)/3000);
+    radarCtx.beginPath();radarCtx.arc(cx+b.x,cy+b.y,3,0,Math.PI*2);
+    radarCtx.fillStyle=b.anomaly?`rgba(230,36,41,${alpha})`:`rgba(0,255,170,${alpha})`;radarCtx.fill();
+  });
+  radarCtx.beginPath();radarCtx.arc(cx,cy,r,0,Math.PI*2);radarCtx.strokeStyle='rgba(0,255,170,0.18)';radarCtx.lineWidth=1.5;radarCtx.stroke();
+  radarAngle=(radarAngle+0.04)%(Math.PI*2);requestAnimationFrame(drawRadar);
+}
+drawRadar();
+
+const PANELS=['p0','p1','p2','p3','p4','p5','p6'];
+function setAlertMode(on){
+  document.body.classList.toggle('alert-mode',on);
+  ['mainHeader','mainStatusbar','cameraFeed','tickerWrap','tickerInner','statusDot','camLabel','webCore'].forEach(id=>{
+    document.getElementById(id).classList.toggle('alerted',on);
+  });
+  PANELS.forEach(id=>document.getElementById(id).classList.toggle('alerted',on));
+  document.getElementById('sysStatus').textContent=on?'THREAT DETECTED':'NOMINAL';
+  document.getElementById('sysStatus').classList.toggle('alerted',on);
+  document.getElementById('sbStatus').textContent=on?'THREAT':'NOMINAL';
+  document.getElementById('sbStatus').className='sb-val '+(on?'danger':'ok');
+  document.getElementById('camLabel').textContent=on?'🕷 LIVE · THREAT ACTIVE':'🕷 LIVE · SPIDER-CAM · NOMINAL';
+  document.getElementById('shooterSub').textContent=on?'THREAT DETECTED':'NOMINAL · HIGH PRESSURE';
+  document.getElementById('anomalyCountBig').classList.toggle('has-threats',on);
+  document.getElementById('threatIcon').textContent=on?'🚨':'🕷️';
+}
+
+let popupTimer=null;
+function showPopup(type,reason,ts,count){
+  document.getElementById('paType').textContent=type || 'THREAT';
+  document.getElementById('paReason').textContent=reason || 'Anomaly detected';
+  document.getElementById('paTs').textContent='DETECTED AT '+ts;
+  document.getElementById('paCount').textContent=count;
+  const p=document.getElementById('popupAlert');
+  p.classList.add('show');
+  if(popupTimer) clearTimeout(popupTimer);
+  popupTimer=setTimeout(()=>p.classList.remove('show'),4500);
+}
+
+function flashRule(ruleId){
+  const el=document.getElementById(ruleId);
+  if(!el) return;
+  el.className='rule-badge tripped';
+  el.textContent='TRIPPED';
+  setTimeout(()=>{el.className='rule-badge active';el.textContent='ACTIVE';},3000);
+}
+
+function addLogEntry(ts,msg,type='anomaly'){
+  const list=document.getElementById('logList');
+  const div=document.createElement('div');
+  div.className='log-entry'+(type==='anomaly'?' ':' normal');
+  div.innerHTML=`<span class="log-type ${type==='anomaly'?'anomaly':'ok'}">${type==='anomaly'?'THREAT':'INFO'}</span><span class="log-time">${ts}</span><span class="log-msg">${msg}</span>`;
+  list.prepend(div);
+  while(list.children.length>30) list.removeChild(list.lastChild);
+}
+
+function renderLogs(logs){
+  const list=document.getElementById('logList');
+  if(!logs || !logs.length) return;
+  if(list.dataset.loaded === 'true') return;
+  list.innerHTML='';
+  logs.forEach(item=>{
+    const div=document.createElement('div');
+    div.className='log-entry';
+    div.innerHTML=`<span class="log-type anomaly">${item.type}</span><span class="log-time">${item.time}</span><span class="log-msg">${item.details}</span>`;
+    list.appendChild(div);
+  });
+  list.dataset.loaded='true';
+}
+
+const feedImg=document.getElementById('liveFeed');
+feedImg.onerror=()=>{document.getElementById('feedOffline').style.display='flex';};
+feedImg.onload=()=>{document.getElementById('feedOffline').style.display='none';};
+
+let lastAnomalyCount=0;
+let alertOffTimer=null;
+
+// UPLOAD IMAGE LOGIC
+const btnLive = document.getElementById('btnLive');
+const btnUpload = document.getElementById('btnUpload');
+const uploadInput = document.getElementById('uploadInput');
+const camRes = document.getElementById('camRes');
+
+btnUpload.addEventListener('click', () => uploadInput.click());
+
+uploadInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  document.getElementById('camLabel').textContent = '🕷 UPLOADING TO MAINFRAME...';
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  try {
+    const res = await fetch('/upload-image', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.ok) {
+      isLiveMode = false; // Pause background polling
+      
+      // Force update the image feed
+      document.getElementById('liveFeed').src = data.result_url + '?t=' + new Date().getTime();
+      document.getElementById('camLabel').textContent = '🕷 STATIC ANALYSIS COMPLETE';
+      camRes.textContent = 'UPLOADED IMAGE';
+
+      // Update HUD manually with static image stats
+      document.getElementById('personCount').textContent = data.people;
+      document.getElementById('objCount').textContent = data.violations;
+      document.getElementById('anomalyCountBig').textContent = data.violations;
+      document.getElementById('sbAnomalies').textContent = data.violations;
+      document.getElementById('fpsDisplay').textContent = '--';
+      document.getElementById('camFps').textContent = 'FPS: --';
+      document.getElementById('sbFps').textContent = '--';
+
+      setAlertMode(data.violations > 0);
+
+      btnLive.style.display = 'block';
+      btnUpload.style.display = 'none';
+    } else {
+      alert('Upload failed: ' + data.error);
+      document.getElementById('camLabel').textContent = '🕷 LIVE · SPIDER-CAM · NOMINAL';
+    }
+  } catch (err) {
+    console.error(err);
+    document.getElementById('camLabel').textContent = '🕷 LIVE · SPIDER-CAM · NOMINAL';
+  }
+  uploadInput.value = ''; // Reset input
+});
+
+btnLive.addEventListener('click', () => {
+  isLiveMode = true; // Resume background polling
+  document.getElementById('liveFeed').src = '/stream';
+  document.getElementById('camLabel').textContent = '🕷 LIVE · SPIDER-CAM · NOMINAL';
+  camRes.textContent = 'LIVE DETECTION';
+  btnLive.style.display = 'none';
+  btnUpload.style.display = 'block';
+  setAlertMode(false);
+});
+
+
+async function pollStatus(){
+  if (!isLiveMode) return; // Ignore live JSON while viewing a static image
+
+  try{
+    const res=await fetch('/status',{cache:'no-store'});
+    const d=await res.json();
+
+    // -- telemetry panel --
+    document.getElementById('backendState').textContent='ONLINE';
+    document.getElementById('frameCount').textContent=d.frame ?? 0;
+    document.getElementById('personCount').textContent=d.persons ?? 0;
+    document.getElementById('objCount').textContent=d.violations ?? 0;   // show active violations here
+    document.getElementById('avgConf').textContent=(d.avg_conf ?? 0)+'%';
+    document.getElementById('sbConf').textContent=(d.avg_conf ?? 0)+'%';
+    document.getElementById('fpsDisplay').textContent=d.fps ?? 0;
+    document.getElementById('camFps').textContent='FPS: '+(d.fps ?? 0);
+    document.getElementById('sbFps').textContent=d.fps ?? 0;
+    document.getElementById('sbTotal').textContent=d.frame ?? 0;
+    document.getElementById('anomalyCountBig').textContent=d.anomalies ?? 0;
+    document.getElementById('sbAnomalies').textContent=d.anomalies ?? 0;
+    document.getElementById('timeSinceLast').textContent=d.time_since_last ?? 'N/A';
+    document.getElementById('gpuUtilPct').textContent=(d.avg_conf ?? 0)+'%';
+    document.getElementById('gpuBar').style.width=(d.avg_conf ?? 0)+'%';
+    const threatBar=Math.min((d.anomalies ?? 0)*10,100);
+    document.getElementById('memPct').textContent=d.anomalies ?? 0;
+    document.getElementById('memBar').style.width=threatBar+'%';
+
+    // -- update rule threshold badges from live backend values --
+    if(d.normalized_threshold !== undefined)
+      document.getElementById('ruleThreshold').textContent=d.normalized_threshold.toFixed(2);
+    if(d.fallback_pixel_threshold !== undefined)
+      document.getElementById('ruleFallback').textContent=d.fallback_pixel_threshold;
+
+    // -- last anomaly time --
+    if(d.last_anomaly_time && d.last_anomaly_time > 0){
+      const dt=new Date(d.last_anomaly_time * 1000);
+      document.getElementById('lastAnomalyTime').textContent=
+        `${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}:${String(dt.getSeconds()).padStart(2,'0')}`;
+    }
+
+    renderLogs(d.current_log);
+
+    // -- alert on new breach --
+    if((d.anomalies ?? 0) > lastAnomalyCount){
+      lastAnomalyCount = d.anomalies ?? 0;
+      const now = new Date();
+      const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+      setAlertMode(true);
+      const ov=document.getElementById('alertOverlay');
+      ov.classList.remove('active'); void ov.offsetWidth; ov.classList.add('active');
+
+      const reason = d.last_anomaly_reason || 'Distance breach detected';
+      const type   = d.last_anomaly_type   || 'DISTANCE BREACH';
+      showPopup(type, reason, ts, d.anomalies ?? 0);
+      addLogEntry(ts, reason, 'anomaly');
+      addBlip(true);
+
+      document.getElementById('tickerText').textContent =
+        `🕷 ${type} — ${reason} — ${ts} · TOTAL BREACHES: ${d.anomalies ?? 0} · LOG SAVED`;
+
+      // Flash the relevant distance rules
+      flashRule('rule-norm');
+      if(d.last_pairs){
+        d.last_pairs.forEach(p=>{
+          if(p.status==='BREACH' && p.rule_used==='fallback_pixel') flashRule('rule-fallback');
+        });
+      }
+
+      if(alertOffTimer) clearTimeout(alertOffTimer);
+      alertOffTimer = setTimeout(()=>setAlertMode(false), 5000);
+    }
+  }catch(err){
+    document.getElementById('backendState').textContent='OFFLINE';
+    document.getElementById('feedOffline').style.display='flex';
+  }
+}
+
+setInterval(pollStatus, 500);
+</script>
+</body>
+</html>
