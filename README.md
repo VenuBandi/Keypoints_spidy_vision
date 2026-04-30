@@ -91,7 +91,8 @@ python keypoints_spidy_vision.py
 
 ## 📸 Demo
 
-*(Add your screenshots here for max impact)*
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/85404155-d5a8-4637-890e-571be13c1b82" />
+
 
 Example:
 
