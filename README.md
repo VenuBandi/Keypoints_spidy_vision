@@ -1,154 +1,63 @@
-# 🕷️ Keypoints Spidy Vision
+<div align="center">
 
-### 🧠 Real-Time Human Keypoint Detection on NVIDIA Jetson
+# Keypoints Spidy Vision
 
----
+Real-time human keypoint detection on NVIDIA Jetson, streamed to a live web dashboard.
 
-## 🚀 Project Overview
+[![GitHub stars](https://img.shields.io/github/stars/VenuBandi/Keypoints_spidy_vision?style=for-the-badge&color=yellow)](https://github.com/VenuBandi/Keypoints_spidy_vision/stargazers)
 
-Welcome to **Keypoints Spidy Vision** — a real-time Edge AI system that detects human body keypoints and streams them to a live dashboard.
+[![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)](https://python.org)
+[![Jetson](https://img.shields.io/badge/NVIDIA-Jetson-76B900?logo=nvidia&logoColor=white)](https://developer.nvidia.com/embedded/jetson-nano)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Inspired by a **Spiderman-style vision interface**, this project combines **computer vision, real-time inference, and interactive UI** to create an intelligent perception system.
+</div>
 
----
+<br>
 
-## ⚡ What This Project Does
-
-🔹 Detects human keypoints in real-time
-🔹 Streams processed frames to a live dashboard
-🔹 Runs efficiently on NVIDIA Jetson (Edge AI)
-🔹 Forms the base for gesture recognition & anomaly detection
+![Keypoint Detection Demo](https://github.com/user-attachments/assets/b2212283-8730-4a58-8f17-3ee31c5f38e2)
 
 ---
 
-## 🧠 System Pipeline
+## What It Does
 
-```text
-Camera Feed → Keypoint Detection → Frame Processing → Flask Server → Live Dashboard
-```
-
----
-
-## 🕷️ Spidy Vision Dashboard
-
-* Real-time visual output
-* Keypoint overlays
-* Live streaming interface
-* Designed for future alert systems
-
-👉 Open in browser:
+Detects human body keypoints from a camera feed in real time and streams the annotated output to a Flask web dashboard. Runs on-device using NVIDIA Jetson Inference — no cloud round-trip.
 
 ```
-http://<JETSON_IP>:5000
+Camera Feed → Keypoint Detection (Jetson) → Frame Processing → Flask Server → Live Dashboard
 ```
 
----
-
-## 🖼️ Image-Based Detection (Extension)
-
-This system can also be extended to process static images:
-
-* Upload image → Detect keypoints → Display output
-* Useful for testing without camera
-* Supports debugging and analysis
-
-⚠️ *Planned enhancement (can be implemented easily)*
+Access the dashboard at `http://<JETSON_IP>:5000`
 
 ---
 
-## 🛠️ Tech Stack
+## Use Cases
 
-* 🐍 Python
-* 🎥 OpenCV
-* ⚡ NVIDIA Jetson Inference
-* 🌐 Flask
-* 🧠 Computer Vision Models
+- Foundation for gesture recognition systems
+- Anomaly detection (unauthorized zones, posture alerts)
+- Silent communication research
+- Human activity recognition on edge devices
 
 ---
 
-## ▶️ How to Run
-
-### 1️⃣ Clone Repo
+## Quick Start
 
 ```bash
-git clone https://github.com/Venub1/Keypoints_spidy_vision.git
+git clone https://github.com/VenuBandi/Keypoints_spidy_vision
 cd Keypoints_spidy_vision
-```
-
-### 2️⃣ Install Dependencies
-
-```bash
 pip install flask opencv-python numpy
-```
-
-### 3️⃣ Run the System
-
-```bash
 python keypoints_spidy_vision.py
 ```
 
 ---
 
-## 📸 Demo
+## Stack
 
-<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/b2212283-8730-4a58-8f17-3ee31c5f38e2" />
-
-<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/81bdfeb5-b949-476f-9407-7881994c9719" />
-
-
-
+`Python` `OpenCV` `NVIDIA Jetson Inference` `Flask`
 
 ---
 
-## 🎯 Use Cases
+<div align="center">
 
-🚨 Anomaly Detection Systems
-🧠 Gesture Recognition
-🧑‍🚒 Silent Communication (Security / Emergency)
-🏭 Smart Surveillance
-🤖 Human Activity Recognition
+If this project was useful, a ⭐ helps others find it.
 
----
-
-## 🔮 Future Enhancements
-
-* 🧠 LSTM-based gesture classification
-* 🚨 Forbidden object detection (guns, phones, etc.)
-* ⚠️ Real-time alert system
-* 🎨 Advanced Spiderman-style UI
-* ⚡ Performance optimization
-
----
-
-## ⚠️ Limitations
-
-* Sensitive to lighting conditions
-* Occlusion can affect accuracy
-* Requires Jetson setup for optimal performance
-
----
-
-## 🧠 Project Vision
-
-This project is part of a broader goal to build **real-time intelligent systems on edge devices**, enabling:
-
-* Faster decision-making
-* Reduced latency
-* Real-world deployment readiness
-
----
-
-## 👨‍💻 Author
-
-**Venu Bandi**
-MPS Data Science – UMBC
-
----
-
-## ⭐ Acknowledgements
-
-* NVIDIA Jetson Inference
-* OpenCV Community
-* Real-time pose estimation research
-
----
+</div>
